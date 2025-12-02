@@ -11,7 +11,7 @@ from app.users.models import Users
 
 router = APIRouter(
     prefix="/answers",
-    tags=["Ответы"],
+    tags=["Answers"],
 )
 
 @router.get("", description="Получить все ответы", response_model=List[AnswerSchema])

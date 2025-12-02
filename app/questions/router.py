@@ -10,7 +10,7 @@ from app.questions.exceptions import QuestionNotFound
 
 router = APIRouter(
     prefix="/questions",
-    tags=["Вопросы"],
+    tags=["Questions"],
 )
 
 
@@ -35,15 +35,19 @@ async def get_question_and_answers(
         question_id: int,
         service: QuestionService = Depends(QuestionService),
 ):
-    question = await service.get_one_question_and_answers(question_id=question_id)
-    if not question:
+    try:
+        question = await service.get_one_question_and_answers(question_id=question_id)
+        return question
+    except:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Вопрос не найден")
-    return question
 
 
 @router.delete("/{question_id}", description="Удалить вопрос вместе с ответами", response_model=None)
 async def delete_question(
+        question_id: int,
         service: QuestionService = Depends(QuestionService),
-        question_id: Optional[int] = None,
 ):
-    return await service.delete_one_question(question_id)
+    question = await service.delete_one_question(question_id)
+    if not question:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Вопрос не найден")
+    return question

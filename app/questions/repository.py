@@ -44,7 +44,5 @@ class QuestionRepository(BaseRepository):
     @classmethod
     async def delete_question(cls, question_id) -> None:
         question = await cls.delete(question_id)
-        if question is None:
-            raise QuestionNotFound
         return question
 

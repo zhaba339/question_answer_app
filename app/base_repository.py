@@ -8,6 +8,7 @@ from app.database import async_session_maker
 
 
 class BaseRepository:
+    model = None
 
     @classmethod
     async def find_all(cls, **filters):
