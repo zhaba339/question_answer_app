@@ -12,3 +12,6 @@ class AnswerSchema(BaseAnswerSchema):
     question_id: int
     text: str
     created_at: datetime
+
+    class Config:
+        from_attributes = True

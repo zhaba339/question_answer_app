@@ -1,5 +1,5 @@
 from datetime import time, datetime
-
+from app.redis import redis_client
 from sqlalchemy.testing.suite.test_reflection import users
 from starlette.exceptions import HTTPException
 from sqlalchemy import select, insert, delete, exists
@@ -12,13 +12,18 @@ from app.database import async_session_maker
 class AnswerRepository(BaseRepository):
     model = Answers
 
+    # def __init__(self):
+    #     self.model = Answers
+    #     self.db = db
+    #     self.redis_client = redis_client
+
     @classmethod
     async def add_one_answer(cls, question_id, user_id, text):
         from app.questions.repository import QuestionRepository
         created_at = datetime.now()
         question = await QuestionRepository.find_by_id(question_id)
         if not question:
-            raise HTTPException(status_code=404, detail="Ответ на несуществующий вопрос")
+            raise Exception("Question not found")
         answer = await cls.insert(question_id=question_id, user_id=user_id, text=text, created_at=created_at)
         return answer
 
@@ -30,8 +35,14 @@ class AnswerRepository(BaseRepository):
 
     @classmethod
     async def find_one_answer(cls, answer_id):
-        answer = await cls.find_by_id(answer_id)
-        return answer
+        answer_orm = await cls.find_by_id(answer_id)
+        answer_pydantic = AnswerSchema.model_validate(answer_orm)
+        answer_json = answer_pydantic.model_dump_json()
+        print(answer_json)
+        key = f"answer:{answer_id}"
+        cached_answer = redis_client.setex(key, 10, answer_json)
+        print(cached_answer)
+        return answer_orm
 
     @classmethod
     async def delete_one_answer(cls, answer_id):
