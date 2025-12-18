@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 @router.get("", description="Получить все ответы", response_model=List[AnswerSchema])
-async def get_answers(service: AnswerService = Depends(AnswerService)) -> List[AnswerSchema]:
+async def read_all_answers(service: AnswerService = Depends(AnswerService)) -> List[AnswerSchema]:
     answers =  await service.get_all_answers()
     if not answers:
         raise HTTPException(status_code=404, detail="Ответы не найдены")

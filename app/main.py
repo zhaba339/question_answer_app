@@ -6,6 +6,7 @@ from app.questions.models import Questions
 from app.answers.models import Answers
 from app.answers.router import router as answer_router
 from app.questions.router import router as question_router
+from app.users.router import router as user_router
 
 
 @asynccontextmanager
@@ -21,3 +22,4 @@ app = FastAPI()
 
 app.include_router(question_router)
 app.include_router(answer_router)
+app.include_router(user_router)
