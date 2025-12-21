@@ -14,6 +14,7 @@ class BaseQuestionSchema(BaseModel):
 
 class QuestionSchema(BaseQuestionSchema):
     id: int
+    user_id: int
     text: str
     created_at: datetime
 

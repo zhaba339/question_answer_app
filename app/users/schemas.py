@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, UUID4
 
 
 class BaseUserSchema(BaseModel):
@@ -9,6 +9,5 @@ class BaseUserSchema(BaseModel):
 
 class UserSchema(BaseUserSchema):
     id: int
-    user_id: int
     login: str
     password: str

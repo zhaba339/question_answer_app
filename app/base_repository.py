@@ -45,14 +45,13 @@ class BaseRepository:
                 raise e
 
     @classmethod
-    async def delete(cls, model_id: int):
+    async def delete(cls, model_id: int) -> bool:
         async with async_session_maker() as session:
             try:
-                obj = await cls.find_by_id(model_id)
                 query = delete(cls.model).where(cls.model.id == model_id)
-                await session.execute(query)
+                result = await session.execute(query)
                 await session.commit()
-                return obj
+                return result.rowcount > 0
             except Exception as e:
                 await session.rollback()
                 raise e

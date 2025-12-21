@@ -8,7 +8,7 @@ class BaseAnswerSchema(BaseModel):
 
 class AnswerSchema(BaseAnswerSchema):
     id: int
-    user_id: UUID
+    user_id: int
     question_id: int
     text: str
     created_at: datetime
