@@ -33,7 +33,7 @@ async def get_answer(answer_id: int, service: AnswerService = Depends(AnswerServ
 @router.post("/questions/{question_id}/answers", description="Добавить ответ к вопросу", response_model=AnswerSchema)
 async def post_answer(
         question_id: int = Path(..., description="ID вопроса из базы данных", example=1),
-        user_id: UUID = UUID("d8722f82-7567-438a-8613-f315ec177d09"),
+        user_id: int = Query(..., description="ID пользователя", example=2),
         text: str = Query(..., description="Текст ответа"),
         service: AnswerService = Depends(AnswerService),
 ):

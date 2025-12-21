@@ -12,7 +12,7 @@ class AnswerService:
         return answers
 
     @staticmethod
-    async def create_one_answer(question_id: int, user_id: UUID, text: str) -> AnswerSchema:
+    async def create_one_answer(question_id: int, user_id: int, text: str) -> AnswerSchema:
         answer = await AnswerRepository.add_one_answer(question_id, user_id, text)
         return answer
 
