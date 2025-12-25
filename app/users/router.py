@@ -4,13 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 from uuid import UUID
 from starlette.exceptions import HTTPException
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_201_CREATED, HTTP_204_NO_CONTENT
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
 
 from app.users.models import Users
 from app.users.schemas import UserSchema
 from app.base_repository import BaseRepository
 from app.database import async_session_maker
 from app.users.service import UserService
+from app.users.exceptions import EntityNotFoundError, EntityHasDependenciesError
 
 router = APIRouter(
     prefix="/users",
@@ -59,9 +60,14 @@ async def delete_user(
     user_id: int,
     service: UserService = Depends(UserService)
 ):
-    deleted_user = await service.delete_one_user(user_id=user_id)
-    if not deleted_user:
+
+    try:
+        await service.delete_one_user(user_id)
+    except EntityNotFoundError:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Пользователь не найден")
+    except EntityHasDependenciesError:
+        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Невозможно удалить пользователя, так как у него есть ответы или вопросы")
+
 
 
 

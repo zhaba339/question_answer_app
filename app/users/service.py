@@ -2,6 +2,9 @@ from typing import List
 from app.users.repository import UserRepository
 from app.users.schemas import UserSchema
 from uuid import UUID
+from app.answers.repository import AnswerRepository
+from app.users.exceptions import EntityNotFoundError, EntityHasDependenciesError
+from app.users.models import Users
 
 
 class UserService:
@@ -23,4 +26,10 @@ class UserService:
 
     @staticmethod
     async def delete_one_user(user_id) -> bool:
-        return await UserRepository.delete_user(user_id)
+        user_exists = await UserRepository.exists_user(user_id)
+        if not user_exists:
+            raise EntityNotFoundError("User", user_id)
+        if await UserRepository.exists_by_user(user_id):
+            raise EntityHasDependenciesError("User has existing answers or questions")
+        await UserRepository.delete(user_id)
+        return True

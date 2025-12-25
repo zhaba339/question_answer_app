@@ -23,3 +23,18 @@ class UserRepository(BaseRepository):
     @classmethod
     async def delete_user(cls, user_id) -> bool:
         return await cls.delete(user_id)
+
+    @classmethod
+    async def exists_by_user(cls, user_id) -> bool:
+        has_answers = select(exists().where.Answer.user_id == user_id)
+        has_questions = select(exists().where.Question.user_id == user_id)
+        result_has_answers = await has_answers.execute()
+        result_has_questions = await has_questions.execute()
+        return result_has_answers and result_has_questions
+
+    @classmethod
+    async def exists_user(cls, user_id) -> bool:
+        exists_user = cls.find_by_id(user_id)
+        if exists_user:
+            return True
+        return False

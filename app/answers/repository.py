@@ -38,10 +38,8 @@ class AnswerRepository(BaseRepository):
         answer_orm = await cls.find_by_id(answer_id)
         answer_pydantic = AnswerSchema.model_validate(answer_orm)
         answer_json = answer_pydantic.model_dump_json()
-        print(answer_json)
         key = f"answer:{answer_id}"
         cached_answer = redis_client.setex(key, 10, answer_json)
-        print(cached_answer)
         return answer_orm
 
     @classmethod
