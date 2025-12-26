@@ -1,5 +1,6 @@
-import redis
-from app.redis import redis_client
+import uvicorn
+
+from app.redis_client import redis_client
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.questions.models import Questions
@@ -17,7 +18,11 @@ async def lifespan(app: FastAPI):
     # Закрываем соединение при завершении
     await redis_client.close()
 
+
 app = FastAPI()
+
+if "__main__" == __name__:
+    uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
 
 
 app.include_router(question_router)
