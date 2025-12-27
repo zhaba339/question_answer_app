@@ -1,5 +1,5 @@
 from datetime import time, datetime
-from app.redis import redis_client
+from app.redis_client import redis_client
 from sqlalchemy.testing.suite.test_reflection import users
 from starlette.exceptions import HTTPException
 from sqlalchemy import select, insert, delete, exists
