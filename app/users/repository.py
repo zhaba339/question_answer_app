@@ -1,5 +1,11 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.users.models import Users
 from app.base_repository import BaseRepository
+from sqlalchemy import select, exists
+from app.answers.models import Answers
+from app.questions.models import Questions
+from database import async_session_maker
 
 
 class UserRepository(BaseRepository):
@@ -25,12 +31,11 @@ class UserRepository(BaseRepository):
         return await cls.delete(user_id)
 
     @classmethod
-    async def exists_by_user(cls, user_id) -> bool:
-        has_answers = select(exists().where.Answer.user_id == user_id)
-        has_questions = select(exists().where.Question.user_id == user_id)
-        result_has_answers = await has_answers.execute()
-        result_has_questions = await has_questions.execute()
-        return result_has_answers and result_has_questions
+    async def exists_answers_questions(cls, user_id) -> bool:
+        async with async_session_maker() as session:
+            query = select(exists().where(Questions.user_id == user_id))
+            result = await session.execute(query)
+            return result.scalar()
 
     @classmethod
     async def exists_user(cls, user_id) -> bool:
