@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     REDIS_DB: int
     REDIS_USER: str
     REDIS_PASS: str
+    SECRET_KEY: str
+    ALGORITHM: str
+
 
     def get_database_url_async(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
@@ -24,6 +27,9 @@ class Settings(BaseSettings):
 
     def get_redis_url_async(self) -> str:
         return f"redis://{self.REDIS_USER}:{self.REDIS_PASS}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+
+    def get_auth_data(self) -> dict:
+        return {"secret_key": self.SECRET_KEY, "algorithm": self.ALGORITHM}
 
     class Config:
         env_file = ".env"

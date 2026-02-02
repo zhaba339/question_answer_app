@@ -11,4 +11,6 @@ asyncpg
 psycopg2
 uvicorn
 redis
-authx
+python-jose
+bcrypt==4.0.1
+passlib[bcrypt]

@@ -23,7 +23,7 @@ class QuestionRepository(BaseRepository):
         return result
 
     @classmethod
-    async def find_question_and_answers(cls, question_id) -> QuestionAnswersSchema:
+    async def find_question_and_answers(cls, question_id):
         from app.answers.repository import AnswerRepository
         question = await cls.find_by_id(question_id)
         answers = await AnswerRepository.find_all(question_id=question_id)
@@ -36,13 +36,13 @@ class QuestionRepository(BaseRepository):
         return result
 
     @classmethod
-    async def insert_question(cls, text: str) -> QuestionSchema:
+    async def insert_question(cls, text: str):
         created_at = datetime.now()
         question = await cls.insert(text=text, created_at=created_at)
         return question
 
     @classmethod
-    async def delete_question(cls, question_id) -> None:
+    async def delete_question(cls, question_id):
         question = await cls.delete(question_id)
         return question
 

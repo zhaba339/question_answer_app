@@ -1,17 +1,21 @@
+from logging import getLogger
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 from uuid import UUID
 from starlette.exceptions import HTTPException
+from starlette.responses import JSONResponse
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
 
 from app.users.models import Users
-from app.users.schemas import UserSchema
+from app.users.schemas import UserSchema, UserRegisterSchema
 from app.base_repository import BaseRepository
 from app.database import async_session_maker
 from app.users.service import UserService
 from app.users.exceptions import EntityNotFoundError, EntityHasDependenciesError
+from users.auth import get_password_hash
 
 router = APIRouter(
     prefix="/users",
@@ -19,21 +23,30 @@ router = APIRouter(
 )
 
 
-@router.get("", description="Получить всех пользователей", response_model=List[UserSchema])
-async def read_all_users(
-    service: UserService = Depends(UserService)
-) -> List[UserSchema]:
-    try:
-        users = await service.get_all_users()
-        return users
-    except:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Пользователи не найдены")
+@router.post("/register", description="Регистрация пользователя", response_model=UserSchema)
+async def register(
+        user: UserRegisterSchema,
+        service: UserService = Depends(UserService)
+) -> JSONResponse:
+    exists_user = await service.get_exists_user(login=user.login)
+    if exists_user:
+        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Пользователь уже существует")
+    await service.create_one_user(login=user.login, password=user.password)
+    return JSONResponse(
+        status_code=201,
+        content={"message": "Пользователь успешно зарегистрирован"}
+    )
+
+
+@router.post("/login", description="Вход пользователя")
+async def login():
+    pass
 
 
 @router.get("/{user_id}", description="Получить пользователя", response_model=UserSchema)
 async def read_user(
-    user_id: int,
-    service: UserService = Depends(UserService)
+        user_id: int,
+        service: UserService = Depends(UserService)
 ) -> UserSchema:
     try:
         user = await service.get_one_user(user_id=user_id)
@@ -44,9 +57,9 @@ async def read_user(
 
 @router.post("", description="Создать пользователя", response_model=UserSchema)
 async def post_user(
-    login: str,
-    password: str,
-    service: UserService = Depends(UserService)
+        login: str,
+        password: str,
+        service: UserService = Depends(UserService)
 ) -> UserSchema:
     try:
         user = await service.create_one_user(login=login, password=password)
@@ -57,17 +70,13 @@ async def post_user(
 
 @router.delete("/{user_id}", description="Удалить пользователя", status_code=HTTP_204_NO_CONTENT)
 async def delete_user(
-    user_id: int,
-    service: UserService = Depends(UserService)
+        user_id: int,
+        service: UserService = Depends(UserService)
 ):
-
     try:
         await service.delete_one_user(user_id)
     except EntityNotFoundError:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Пользователь не найден")
     except EntityHasDependenciesError:
-        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Невозможно удалить пользователя, так как у него есть ответы или вопросы")
-
-
-
-
+        raise HTTPException(status_code=HTTP_409_CONFLICT,
+                            detail="Невозможно удалить пользователя, так как у него есть ответы или вопросы")

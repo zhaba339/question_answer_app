@@ -6,6 +6,7 @@ from sqlalchemy import select, exists
 from app.answers.models import Answers
 from app.questions.models import Questions
 from database import async_session_maker
+from users.schemas import UserSchema
 
 
 class UserRepository(BaseRepository):
@@ -43,3 +44,12 @@ class UserRepository(BaseRepository):
         if exists_user:
             return True
         return False
+
+
+    """Поиск пользователя по логину (существует или нет)"""
+    @classmethod
+    async def find_user_by_login(cls, login) -> UserSchema:
+        async with async_session_maker() as session:
+            query = select(Users).where(Users.login == login)
+            result = await session.execute(query)
+            return result.scalar_one_or_none()

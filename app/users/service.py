@@ -39,3 +39,8 @@ class UserService:
         else:
             await UserRepository.delete(user_id)
             return True
+
+    @staticmethod
+    async def get_exists_user(login: str) -> UserSchema or None:
+        exists_user = await UserRepository.find_user_by_login(login)
+        return exists_user
