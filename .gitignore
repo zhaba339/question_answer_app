@@ -1,3 +1,7 @@
 .idea
 .venv
 .env
+/redisdata/appendonlydir/appendonly.aof.1.base.rdb
+/redisdata/appendonlydir/appendonly.aof.1.incr.aof
+/redisdata/appendonlydir/appendonly.aof.manifest
+/redisdata/dump.rdb
