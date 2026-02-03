@@ -6,16 +6,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 from uuid import UUID
 from starlette.exceptions import HTTPException
-from starlette.responses import JSONResponse
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_409_CONFLICT
+from starlette.responses import JSONResponse, Response
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_409_CONFLICT, \
+    HTTP_401_UNAUTHORIZED
 
 from app.users.models import Users
-from app.users.schemas import UserSchema, UserRegisterSchema
+from app.users.schemas import UserSchema, UserRegisterSchema, UserLoginSchema
 from app.base_repository import BaseRepository
 from app.database import async_session_maker
 from app.users.service import UserService
 from app.users.exceptions import EntityNotFoundError, EntityHasDependenciesError
-from users.auth import get_password_hash
+from app.users.auth import get_password_hash, authenticate_user, create_access_token
 
 router = APIRouter(
     prefix="/users",
@@ -23,24 +24,28 @@ router = APIRouter(
 )
 
 
-@router.post("/register", description="Регистрация пользователя", response_model=UserSchema)
+@router.post("/register", description="Регистрация нового пользователя", response_model=UserSchema)
 async def register(
         user: UserRegisterSchema,
         service: UserService = Depends(UserService)
-) -> JSONResponse:
+) -> UserSchema:
     exists_user = await service.get_exists_user(login=user.login)
     if exists_user:
         raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Пользователь уже существует")
-    await service.create_one_user(login=user.login, password=user.password)
-    return JSONResponse(
-        status_code=201,
-        content={"message": "Пользователь успешно зарегистрирован"}
-    )
+    user_dict = user.dict()
+    user_dict['password'] = get_password_hash(user.password)
+    new_user = await service.create_one_user(**user_dict)
+    return new_user
 
 
 @router.post("/login", description="Вход пользователя")
-async def login():
-    pass
+async def login(response: Response, user: UserLoginSchema):
+    check = await authenticate_user(login=user.login, password=user.password)
+    if not check:
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Неверный логин или пароль")
+    access_token = create_access_token({"sub": str(check.id)})
+    response.set_cookie(key="access_token", value=access_token, httponly=True)
+    return {"access_token": access_token, "refresh_token": None}
 
 
 @router.get("/{user_id}", description="Получить пользователя", response_model=UserSchema)

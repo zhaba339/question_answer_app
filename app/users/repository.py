@@ -18,9 +18,16 @@ class UserRepository(BaseRepository):
         return users
 
     @classmethod
-    async def find_user(cls, user_id) -> Users or None:
+    async def find_user_by_id(cls, user_id) -> Users or None:
         user = await cls.find_by_id(user_id)
         return user
+
+    @classmethod
+    async def find_user_by_login(cls, login: str) -> Users or None:
+        async with async_session_maker() as session:
+            query = select(Users).where(cls.model.login == login)
+            user = await session.execute(query)
+            return user
 
     @classmethod
     async def insert_user(cls, login, password) -> Users or None:

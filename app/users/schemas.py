@@ -14,3 +14,8 @@ class UserSchema(BaseUserSchema):
 class UserRegisterSchema(BaseUserSchema):
     login: str
     password: str
+
+
+class UserLoginSchema(BaseUserSchema):
+    login: str
+    password: str
