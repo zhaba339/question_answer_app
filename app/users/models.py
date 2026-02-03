@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 from app.database import Base
 import sqlalchemy as sa
@@ -7,5 +8,6 @@ class Users(Base):
     __tablename__ = "users"
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
     login = sa.Column(sa.String, nullable=False)
     password = sa.Column(sa.String, nullable=False)
