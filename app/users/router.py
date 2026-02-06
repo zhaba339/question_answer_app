@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 from uuid import UUID
+
 from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse, Response
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_409_CONFLICT, \
@@ -17,6 +18,7 @@ from app.database import async_session_maker
 from app.users.service import UserService
 from app.users.exceptions import EntityNotFoundError, EntityHasDependenciesError
 from app.users.auth import get_password_hash, authenticate_user, create_access_token
+from users.dependencies import get_current_user
 
 router = APIRouter(
     prefix="/users",
@@ -38,7 +40,7 @@ async def register(
     return new_user
 
 
-@router.post("/login", description="Вход пользователя")
+@router.post("/login", description="Вход в аккаунт пользователя")
 async def login(response: Response, user: UserLoginSchema):
     check = await authenticate_user(login=user.login, password=user.password)
     if not check:
@@ -46,6 +48,17 @@ async def login(response: Response, user: UserLoginSchema):
     access_token = create_access_token({"sub": str(check.id)})
     response.set_cookie(key="access_token", value=access_token, httponly=True)
     return {"access_token": access_token, "refresh_token": None}
+
+
+@router.get("/me", description="Получить данные о пользователе")
+async def get_me(user_data: Depends(get_current_user)):
+    return user_data
+
+
+@router.post("/logout", description="Выйти из аккаунта пользователя")
+async def logout_user(response: Response):
+    response.delete_cookie(key="access_token")
+    return {'message': 'Пользователь успешно вышел из системы'}
 
 
 @router.get("/{user_id}", description="Получить пользователя", response_model=UserSchema)
