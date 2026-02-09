@@ -15,10 +15,11 @@ from app.users.models import Users
 from app.users.schemas import UserSchema, UserRegisterSchema, UserLoginSchema
 from app.base_repository import BaseRepository
 from app.database import async_session_maker
+from app.users.models import Users
 from app.users.service import UserService
 from app.users.exceptions import EntityNotFoundError, EntityHasDependenciesError
 from app.users.auth import get_password_hash, authenticate_user, create_access_token
-from users.dependencies import get_current_user
+from app.users.dependencies import get_current_user
 
 router = APIRouter(
     prefix="/users",
@@ -51,7 +52,7 @@ async def login(response: Response, user: UserLoginSchema):
 
 
 @router.get("/me", description="Получить данные о пользователе")
-async def get_me(user_data: Depends(get_current_user)):
+async def get_me(user_data: Users = Depends(get_current_user)):
     return user_data
 
 
@@ -67,7 +68,7 @@ async def read_user(
         service: UserService = Depends(UserService)
 ) -> UserSchema:
     try:
-        user = await service.get_one_user(user_id=user_id)
+        user = await service.get_one_user_by_id(user_id=user_id)
         return user
     except:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Пользователь не найден")

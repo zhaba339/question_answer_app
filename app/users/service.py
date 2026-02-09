@@ -17,8 +17,15 @@ class UserService:
         return users
 
     @staticmethod
-    async def get_one_user(user_id: int) -> UserSchema:
-        user = await UserRepository.find_user(user_id)
+    async def get_one_user_by_id(user_id: int) -> UserSchema:
+        user = await UserRepository.find_user_by_id(user_id)
+        if not user:
+            raise EntityNotFoundError
+        return user
+
+    @staticmethod
+    async def get_one_user_by_login(login: str) -> UserSchema:
+        user = await UserRepository.find_user_by_login(login)
         if not user:
             raise EntityNotFoundError
         return user
@@ -30,7 +37,7 @@ class UserService:
 
     @staticmethod
     async def delete_one_user(user_id) -> bool:
-        user = await UserRepository.find_user(user_id)
+        user = await UserRepository.find_user_by_id(user_id)
         if not user:
             raise EntityNotFoundError("User", user_id)
         user_has_content = await UserRepository.exists_answers_questions(user_id)

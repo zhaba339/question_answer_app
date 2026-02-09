@@ -11,3 +11,4 @@ class Users(Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     login = sa.Column(sa.String, nullable=False)
     password = sa.Column(sa.String, nullable=False)
+    is_admin = sa.Column(sa.Boolean, nullable=False, default=False)
