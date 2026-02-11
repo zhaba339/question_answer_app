@@ -51,3 +51,8 @@ class UserService:
     async def get_exists_user(login: str) -> UserSchema or None:
         exists_user = await UserRepository.find_user_by_login(login)
         return exists_user
+
+    @staticmethod
+    async def update_role_user(user_id: int, is_admin_user: bool) -> UserSchema:
+        user = await UserRepository.update_role_user(user_id=user_id, is_admin_user=is_admin_user)
+        return user

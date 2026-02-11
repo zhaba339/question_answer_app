@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.sync import update
 
 from app.users.models import Users
 from app.base_repository import BaseRepository
@@ -60,3 +61,13 @@ class UserRepository(BaseRepository):
             query = select(Users).where(Users.login == login)
             result = await session.execute(query)
             return result.scalar_one_or_none()
+
+    """Обновить роль пользователя"""
+    @classmethod
+    async def update_role_user(cls, user_id: int, is_admin_user: bool) -> UserSchema:
+        async with async_session_maker() as session:
+            query = select(Users).filter(Users.id == user_id).update({"is_admin_user": is_admin_user})
+            print(query)
+            result = await session.execute(query)
+            return result.scalar_one_or_none()
+

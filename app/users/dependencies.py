@@ -6,6 +6,7 @@ from jose import jwt, JWTError
 
 from users.repository import UserRepository
 from app.users.service import UserService
+from users.schemas import UserSchema
 
 
 def get_token(request: Request):
@@ -35,3 +36,9 @@ async def get_current_user(token: str = Depends(get_token), service: UserService
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Пользователь не найден")
 
     return user
+
+
+async def get_current_admin_user(current_user: UserSchema = Depends(get_current_user)):
+    if current_user.is_admin:
+        return current_user
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")

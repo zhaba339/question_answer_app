@@ -20,6 +20,7 @@ from app.users.service import UserService
 from app.users.exceptions import EntityNotFoundError, EntityHasDependenciesError
 from app.users.auth import get_password_hash, authenticate_user, create_access_token
 from app.users.dependencies import get_current_user
+from users.dependencies import get_current_admin_user
 
 router = APIRouter(
     prefix="/users",
@@ -78,7 +79,8 @@ async def read_user(
 async def post_user(
         login: str,
         password: str,
-        service: UserService = Depends(UserService)
+        service: UserService = Depends(UserService),
+        user_data: UserSchema = Depends(get_current_admin_user)
 ) -> UserSchema:
     try:
         user = await service.create_one_user(login=login, password=password)
@@ -90,7 +92,8 @@ async def post_user(
 @router.delete("/{user_id}", description="Удалить пользователя", status_code=HTTP_204_NO_CONTENT)
 async def delete_user(
         user_id: int,
-        service: UserService = Depends(UserService)
+        service: UserService = Depends(UserService),
+        user_data: UserSchema = Depends(get_current_admin_user)
 ):
     try:
         await service.delete_one_user(user_id)
@@ -99,3 +102,31 @@ async def delete_user(
     except EntityHasDependenciesError:
         raise HTTPException(status_code=HTTP_409_CONFLICT,
                             detail="Невозможно удалить пользователя, так как у него есть ответы или вопросы")
+
+
+@router.get("", description="Получить всех пользователей", response_model=list[UserSchema])
+async def read_user(
+        service: UserService = Depends(UserService),
+        user_data: UserSchema = Depends(get_current_admin_user)
+) -> list[UserSchema]:
+    try:
+        users = await service.get_all_users()
+        return users
+    except:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Пользователи не найдены")
+
+
+@router.patch("", description="Изменить роль пользователя", response_model=UserSchema)
+async def edit_role_user(
+        user_id: int,
+        is_admin_user: bool,
+        service: UserService = Depends(UserService),
+        user_data: UserSchema = Depends(get_current_admin_user)
+) -> UserSchema:
+    try:
+        user = await service.get_one_user_by_id(user_id=user_id)
+        if user:
+            updated_user = await service.update_role_user(user_id=user_id, is_admin_user=is_admin_user)
+            return updated_user
+    except:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Пользователь не найден")
