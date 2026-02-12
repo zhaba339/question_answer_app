@@ -20,7 +20,7 @@ from app.users.service import UserService
 from app.users.exceptions import EntityNotFoundError, EntityHasDependenciesError
 from app.users.auth import get_password_hash, authenticate_user, create_access_token
 from app.users.dependencies import get_current_user
-from users.dependencies import get_current_admin_user
+from app.users.dependencies import get_current_admin_user
 
 router = APIRouter(
     prefix="/users",
@@ -124,9 +124,7 @@ async def edit_role_user(
         user_data: UserSchema = Depends(get_current_admin_user)
 ) -> UserSchema:
     try:
-        user = await service.get_one_user_by_id(user_id=user_id)
-        if user:
-            updated_user = await service.update_role_user(user_id=user_id, is_admin_user=is_admin_user)
-            return updated_user
-    except:
+        updated_user = await service.update_role_user(user_id=user_id, is_admin_user=is_admin_user)
+    except EntityNotFoundError:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Пользователь не найден")
+    return updated_user

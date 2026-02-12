@@ -54,5 +54,8 @@ class UserService:
 
     @staticmethod
     async def update_role_user(user_id: int, is_admin_user: bool) -> UserSchema:
-        user = await UserRepository.update_role_user(user_id=user_id, is_admin_user=is_admin_user)
-        return user
+        user = await UserRepository.find_user_by_id(user_id)
+        if not user:
+            raise EntityNotFoundError("User", user_id)
+        updated_user = await UserRepository.update_role_user(user_id, is_admin_user)
+        return updated_user

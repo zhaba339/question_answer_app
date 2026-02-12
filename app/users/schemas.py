@@ -9,6 +9,7 @@ class UserSchema(BaseUserSchema):
     id: int
     login: str
     password: str
+    is_admin: bool
 
 
 class UserRegisterSchema(BaseUserSchema):

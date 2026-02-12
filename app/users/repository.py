@@ -66,8 +66,11 @@ class UserRepository(BaseRepository):
     @classmethod
     async def update_role_user(cls, user_id: int, is_admin_user: bool) -> UserSchema:
         async with async_session_maker() as session:
-            query = select(Users).filter(Users.id == user_id).update({"is_admin_user": is_admin_user})
-            print(query)
-            result = await session.execute(query)
-            return result.scalar_one_or_none()
+            user = await session.get(cls.model, user_id)
+            if not user:
+                raise ValueError("User not found")
+            user.is_admin = is_admin_user
+            await session.commit()
+            await session.refresh(user)
+            return user
 
