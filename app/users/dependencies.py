@@ -4,9 +4,8 @@ from fastapi import Request, HTTPException, status, Depends
 from app.config import settings
 from jose import jwt, JWTError
 
-from users.repository import UserRepository
 from app.users.service import UserService
-from users.schemas import UserSchema
+from app.users.schemas import UserSchema
 
 
 def get_token(request: Request):
