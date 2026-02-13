@@ -1,6 +1,8 @@
 .idea
 .venv
 .env
+./redisdata
+./pos
 __pycache__/
 *.py[cod]
 *$py.class
